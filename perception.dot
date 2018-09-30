@@ -1,7 +1,7 @@
 digraph {
 	ranksep = 0.35;
 	node [shape=plaintext];
-	0 [texlbl="\underline{aa. {\LARGE \color{green} $\neg ((p \wedge q)\vee(\neg p \wedge r))\rightarrow((\neg))$}}"]; 
+	0 [texlbl="\underline{0. {\LARGE \color{green} $\neg ((p \wedge q)\vee(\neg p \wedge r))\rightarrow((\neg))$}}"]; 
 	1 [texlbl="\underline{1. {\LARGE \color{green} $((p \wedge q) \vee (\neg p \wedge r)) \wedge (\neg )$}}"];
 	2 [texlbl="\underline{2. {\LARGE \color{green} $(p \wedge q) \vee (\neg p \wedge r))$}}"];
 	3 [texlbl="\underline{3. {\LARGE \color{green} $\neg ((\neg p \vee q) \wedge (p \vee r))$}}"];
