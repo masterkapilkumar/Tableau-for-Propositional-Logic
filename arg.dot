@@ -1,31 +1,49 @@
 digraph {
 	ranksep = 0.35;
 	node [shape=plaintext];
-subgraph dir {
-1->2;
-2->3;
-3->4;
-3->5;
-4->6;
-6->7;
-7->8;
-8->9;
-8->10;
-9->11;
-11->12;
-12->13;
-10->15;
-15->16;
-16->17;
-5->19;
-19->20;
-20->21;
-20->22;
-21->23;
-23->24;
-24->25;
-22->27;
-27->28;
-28->29;
-}
+	1 [texlbl="\underline{1. {\LARGE \color{green} $((p \wedge q) \vee (\neg p \wedge r)) \wedge (\neg ((\neg p \vee q) \wedge (p \vee r)))$}}"];
+	2 [texlbl="\underline{2. {\LARGE \color{green} $(p \wedge q) \vee (\neg p \wedge r)$}}"];
+	3 [texlbl="\underline{3. {\LARGE \color{green} $\neg ((\neg p \vee q) \wedge (p \vee r))$}}"];
+	4 [texlbl="\underline{4. {\LARGE \color{green} $\neg (\neg p \vee q)$}}"];
+	5 [texlbl="\underline{5. {\LARGE \color{green} $\neg (p \vee r)$}}"];
+	6 [texlbl="\underline{6. {\LARGE \color{green} $\neg\neg p$}}"];
+	7 [texlbl="\underline{7. {\LARGE \color{green} $\neg q$}}"];
+	8 [texlbl="\underline{8. {\LARGE \color{green} $p$}}"];
+	9 [texlbl="\underline{9. {\LARGE \color{green} $p \wedge q$}}"];
+	10 [texlbl="\underline{10. {\LARGE \color{green} $\neg p \wedge r$}}"];
+	11 [texlbl="\underline{11. {\LARGE \color{green} $p$}}"];
+	12 [texlbl="\underline{12. {\LARGE \color{green} $q$}}"];
+	13 [texlbl="\underline{13. {\LARGE \color{green} $\neg p$}}"];
+	14 [texlbl="\underline{14. {\LARGE \color{green} $r$}}"];
+	15 [texlbl="\underline{15. {\LARGE \color{green} $\neg p$}}"];
+	16 [texlbl="\underline{16. {\LARGE \color{green} $\neg r$}}"];
+	17 [texlbl="\underline{17. {\LARGE \color{green} $p \wedge q$}}"];
+	18 [texlbl="\underline{18. {\LARGE \color{green} $\neg p \wedge r$}}"];
+	19 [texlbl="\underline{19. {\LARGE \color{green} $p$}}"];
+	20 [texlbl="\underline{20. {\LARGE \color{green} $q$}}"];
+	21 [texlbl="\underline{21. {\LARGE \color{green} $\neg p$}}"];
+	22 [texlbl="\underline{22. {\LARGE \color{green} $r$}}"];
+	subgraph dir {
+		1->2;
+		2->3;
+		3->4;
+		3->5;
+		4->6;
+		6->7;
+		7->8;
+		8->9;
+		8->10;
+		9->11;
+		11->12;
+		10->13;
+		13->14;
+		5->15;
+		15->16;
+		16->17;
+		16->18;
+		17->19;
+		19->20;
+		18->21;
+		21->22;
+	}
 }

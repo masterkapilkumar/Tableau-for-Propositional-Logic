@@ -33,10 +33,64 @@ struct
 			|NOT (OR (p, q) ) -> convert_to_NNF (AND (NOT (p) , NOT (q) ))
 	*)
 	
-	let rec print_tuple_list_to_file fout dir =
+	let rec print_edges_list_to_file fout dir =
 		match dir with
-			 (a,b)::tl -> (fprintf fout "%d->%d;\n" a b; print_tuple_list_to_file fout tl)
+			 (a,b)::tl -> (fprintf fout "\t\t%d->%d;\n" a b; print_edges_list_to_file fout tl)
 			| [] -> ()
+	
+	let rec print_labels_list_to_file fout fml_map =
+		let rec prop_to_tex prop =
+			match prop with 
+				 AND(NOT(ATOM(a)),NOT(ATOM(b))) ->  "\\neg " ^ a ^ " \\wedge \\neg " ^ b
+				|AND(NOT(ATOM(a)),ATOM(b)) ->  "\\neg " ^ a ^ " \\wedge " ^ b
+				|AND(ATOM(a),NOT(ATOM(b))) ->  a ^ " \\wedge \\neg " ^ b
+				|AND(ATOM(a),ATOM(b)) ->  a ^ " \\wedge " ^ b
+				|AND(a,NOT(ATOM(b))) ->  "(" ^ (prop_to_tex a) ^ ") \\wedge \\neg" ^ b
+				|AND(a,ATOM(b)) ->  "(" ^ (prop_to_tex a) ^ ") \\wedge " ^ b
+				|AND(NOT(ATOM(a)),b) ->  "\\neg " ^ a ^ " \\wedge (" ^ (prop_to_tex b) ^ ")"
+				|AND(ATOM(a),b) ->  a ^ " \\wedge (" ^ (prop_to_tex b) ^ ")"
+				|AND(a,b) -> "(" ^ (prop_to_tex a) ^ ") \\wedge (" ^ (prop_to_tex b) ^ ")"
+				
+				|OR(NOT(ATOM(a)),NOT(ATOM(b))) ->  "\\neg " ^ a ^ " \\vee \\neg " ^ b
+				|OR(NOT(ATOM(a)),ATOM(b)) ->  "\\neg " ^ a ^ " \\vee " ^ b
+				|OR(ATOM(a),NOT(ATOM(b))) ->  a ^ " \\vee \\neg " ^ b
+				|OR(ATOM(a),ATOM(b)) ->  a ^ " \\vee " ^ b
+				|OR(a,NOT(ATOM(b))) ->  "(" ^ (prop_to_tex a) ^ ") \\vee \\neg " ^ b
+				|OR(a,ATOM(b)) ->  "(" ^ (prop_to_tex a) ^ ") \\vee " ^ b
+				|OR(NOT(ATOM(a)),b) ->  "\\neg " ^ a ^ " \\vee (" ^ (prop_to_tex b) ^ ")"
+				|OR(ATOM(a),b) ->  a ^ " \\vee (" ^ (prop_to_tex b) ^ ")"
+				|OR(a,b) -> "(" ^ (prop_to_tex a) ^ ") \\vee (" ^ (prop_to_tex b) ^ ")"
+				
+				|COND(NOT(ATOM(a)),NOT(ATOM(b))) ->  "\\neg " ^ a ^ " \\rightarrow \\neg " ^ b
+				|COND(NOT(ATOM(a)),ATOM(b)) ->  "\\neg " ^ a ^ " \\rightarrow " ^ b
+				|COND(ATOM(a),NOT(ATOM(b))) ->  a ^ " \\rightarrow \\neg " ^ b
+				|COND(ATOM(a),ATOM(b)) ->  a ^ " \\rightarrow " ^ b
+				|COND(a,NOT(ATOM(b))) ->  "(" ^ (prop_to_tex a) ^ ") \\rightarrow \\neg " ^ b
+				|COND(a,ATOM(b)) ->  "(" ^ (prop_to_tex a) ^ ") \\rightarrow " ^ b
+				|COND(NOT(ATOM(a)),b) ->  "\\neg " ^ a ^ " \\rightarrow (" ^ (prop_to_tex b) ^ ")"
+				|COND(ATOM(a),b) ->  a ^ " \\rightarrow (" ^ (prop_to_tex b) ^ ")"
+				|COND(a,b) -> "(" ^ (prop_to_tex a) ^ ") \\rightarrow (" ^ (prop_to_tex b) ^ ")"
+				
+				|BIC(NOT(ATOM(a)),NOT(ATOM(b))) ->  "\\neg " ^ a ^ " \\leftrightarrow \\neg " ^ b
+				|BIC(NOT(ATOM(a)),ATOM(b)) ->  "\\neg " ^ a ^ " \\leftrightarrow " ^ b
+				|BIC(ATOM(a),NOT(ATOM(b))) ->  a ^ " \\leftrightarrow \\neg " ^ b
+				|BIC(ATOM(a),ATOM(b)) ->  a ^ " \\leftrightarrow " ^ b
+				|BIC(a,NOT(ATOM(b))) ->  "(" ^ (prop_to_tex a) ^ ") \\leftrightarrow \\neg " ^ b
+				|BIC(a,ATOM(b)) ->  "(" ^ (prop_to_tex a) ^ ") \\leftrightarrow " ^ b
+				|BIC(NOT(ATOM(a)),b) ->  "\\neg " ^ a ^ " \\leftrightarrow (" ^ (prop_to_tex b) ^ ")"
+				|BIC(ATOM(a),b) ->  a ^ " \\leftrightarrow (" ^ (prop_to_tex b) ^ ")"
+				|BIC(a,b) -> "(" ^ (prop_to_tex a) ^ ") \\leftrightarrow (" ^ (prop_to_tex b) ^ ")"
+				
+				|NOT(NOT(ATOM(a))) -> "\\neg\\neg " ^ a
+				|NOT(ATOM(a)) -> "\\neg " ^ a
+				|NOT(a) -> "\\neg (" ^ (prop_to_tex a) ^ ")"
+				
+				|ATOM(s) -> s
+		in
+		match fml_map with
+			 (n,p)::tl -> (fprintf fout "\t%d [texlbl=\"\\underline{%d. {\\LARGE \\color{green} $%s$}}\"];\n" n n (prop_to_tex p); print_labels_list_to_file fout tl)
+			| [] -> ()
+	
 	
 	let tableau prop_list =
 		let fout = open_out "arg.dot" in
@@ -61,29 +115,31 @@ struct
 				|NOT(COND(a,b)) -> tableau_helper (OR(a, NOT b)) lits n1 n2 extras
 				|NOT(BIC(a,b)) ->  tableau_helper (OR(AND(a,NOT b), AND(NOT a, b))) lits n1 n2 extras
 				|NOT(NOT a) ->  let _ = printf "not not %d %d\n" n1 n2 in
-									tableau_helper a lits n1 n2  extras
+								let (litsA, nA, dirA, fml_map) = tableau_helper a lits n2 (n2+1) extras in
+									(litsA, nA, (n1,n2)::dirA, (n2, a)::fml_map)
 				|NOT(ATOM s) -> (   let _ = printf "not atom %d %d\n" n1 n2 in
 									match extras with
 									 hd::tl -> let _ = printf "not atom extras %d %d\n" n1 n2 in
 												let (litsA, nA, dirA, fml_map) = tableau_helper hd lits n1 n2 tl in     (*use inside let in, and and change 1 and n2 accord to last subtree formed*)
-													(litsA, nA, dirA, (n1, ATOM(s))::fml_map)
-									|[] -> (lits, n2, [], [])
+													(litsA, nA, dirA, fml_map)
+									|[] -> (lits, n1, [], [])
 								)
-				|ATOM(s) -> (	printf "atom %d %d\n" n1 n2;
+				|ATOM(s) -> (	let _ = printf "atom %d %d\n" n1 n2 in
 								match extras with
 									 hd::tl -> let _ = printf "atom extras %d %d\n" n1 n2 in
-												let (litsA, nA, dirA, fml_map) = tableau_helper hd lits (n1+1) (n2+1) tl in
-													(litsA, nA, (n1,n2)::dirA, (n1, ATOM(s))::fml_map)
-									|[] -> (lits, n2, [], [])
+												let (litsA, nA, dirA, fml_map) = tableau_helper hd lits n1 n2 tl in
+													(litsA, nA, dirA, fml_map)
+									|[] -> (lits, n1, [], [])
 							)
 		in
 		let arg = AND(convert_arg_to_Prop (List.tl prop_list), (List.hd prop_list)) in
 		let (lits, n, dir, fml_map_temp) = tableau_helper arg [] 1 2 [] in
 		let fml_map = (1,arg)::fml_map_temp in
-		let _ = fprintf fout "subgraph dir {\n" in
-		let _ = print_tuple_list_to_file fout dir in
-		let _ = fprintf fout "}\n}" in
-			fml_map
+		let _ = print_labels_list_to_file fout fml_map in
+		let _ = fprintf fout "\tsubgraph dir {\n" in
+		let _ = print_edges_list_to_file fout dir in
+		let _ = fprintf fout "\t}\n}" in
+			close_out fout
 	
 end;;
 #use "arg.ml";;

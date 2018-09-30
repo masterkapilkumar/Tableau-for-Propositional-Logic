@@ -1,8 +1,8 @@
 open PropLogicTableau
 
-let perceive = ATOM "I perceive";;
-let delusive = ATOM "My perception is delusive";;
-let veridical = ATOM "My perception is veridical";;
+let perceive = ATOM "p";;
+let delusive = ATOM "q";;
+let veridical = ATOM "r";;
 let something = ATOM "I perceive something";;
 let material = ATOM "I perceive a material object";;
 let sensation = ATOM "I perceive a sensation";;

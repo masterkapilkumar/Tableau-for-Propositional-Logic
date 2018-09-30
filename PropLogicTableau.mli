@@ -9,5 +9,5 @@ sig
 		COND of prop * prop |
 		BIC of prop * prop
 	type argument
-
+	val tableau: prop list -> unit
 end
