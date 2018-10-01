@@ -1,65 +1,45 @@
 digraph {
 	ranksep = 0.35;
 	node [shape=plaintext];
-	1 [texlbl="\underline{1. {\LARGE \color{green} $((p \wedge q) \vee (\neg p \wedge r)) \wedge (\neg ((\neg p \vee q) \wedge (p \vee r)))$}}"];
-	2 [texlbl="\underline{2. {\LARGE \color{green} $(p \wedge q) \vee (\neg p \wedge r)$}}"];
-	3 [texlbl="\underline{3. {\LARGE \color{green} $\neg ((\neg p \vee q) \wedge (p \vee r))$}}"];
-	4 [texlbl="\underline{4. {\LARGE \color{green} $\neg (\neg p \vee q)$}}"];
-	5 [texlbl="\underline{5. {\LARGE \color{green} $\neg (p \vee r)$}}"];
-	6 [texlbl="\underline{6. {\LARGE \color{green} $\neg \neg p$}}"];
-	7 [texlbl="\underline{7. {\LARGE \color{green} $\neg q$}}"];
+	1 [texlbl="\underline{1. {\LARGE \color{green} $(p \wedge q) \wedge (\neg (\neg (q \leftrightarrow p)))$}}"];
+	2 [texlbl="\underline{2. {\LARGE \color{green} $p \wedge q$}}"];
+	3 [texlbl="\underline{3. {\LARGE \color{green} $\neg (\neg (q \leftrightarrow p))$}}"];
+	4 [texlbl="\underline{4. {\LARGE \color{green} $q \leftrightarrow p$}}"];
+	5 [texlbl="\underline{5. {\LARGE \color{green} $q \wedge p$}}"];
+	6 [texlbl="\underline{6. {\LARGE \color{green} $\neg q \wedge \neg p$}}"];
+	7 [texlbl="\underline{7. {\LARGE \color{green} $q$}}"];
 	8 [texlbl="\underline{8. {\LARGE \color{green} $p$}}"];
-	9 [texlbl="\underline{9. {\LARGE \color{green} $p \wedge q$}}"];
-	10 [texlbl="\underline{10. {\LARGE \color{green} $\neg p \wedge r$}}"];
-	11 [texlbl="\underline{11. {\LARGE \color{green} $p$}}"];
-	12 [texlbl="\underline{12. {\LARGE \color{green} $q$}}"];
-	14 [texlbl="\underline{14. {\LARGE \color{green} $\neg p$}}"];
-	15 [texlbl="\underline{15. {\LARGE \color{green} $\neg p$}}"];
-	16 [texlbl="\underline{16. {\LARGE \color{green} $\neg r$}}"];
-	17 [texlbl="\underline{17. {\LARGE \color{green} $p \wedge q$}}"];
-	18 [texlbl="\underline{18. {\LARGE \color{green} $\neg p \wedge r$}}"];
-	19 [texlbl="\underline{19. {\LARGE \color{green} $p$}}"];
-	20 [texlbl="\underline{20. {\LARGE \color{green} $\neg p$}}"];
-	21 [texlbl="\underline{21. {\LARGE \color{green} $r$}}"];
+	9 [texlbl="\underline{9. {\LARGE \color{green} $p$}}"];
+	10 [texlbl="\underline{10. {\LARGE \color{green} $q$}}"];
+	11 [texlbl="\underline{11. {\LARGE \color{green} $\neg q$}}"];
+	12 [texlbl="\underline{12. {\LARGE \color{green} $\neg p$}}"];
+	13 [texlbl="\underline{13. {\LARGE \color{green} $p$}}"];
 	subgraph dir {
 		1->2;
 		2->3;
 		3->4;
-		3->5;
+		4->5;
 		4->6;
-		6->7;
+		5->7;
 		7->8;
 		8->9;
-		8->10;
-		9->11;
+		9->10;
+		6->11;
 		11->12;
-		10->14;
-		5->15;
-		15->16;
-		16->17;
-		16->18;
-		17->19;
-		18->20;
-		20->21;
+		12->13;
 	}
 	subgraph ancestor {
 		edge [dir=back, color=blue, style=dashed]
 		1->3;
-		4->7;
-		6->8;
+		5->8;
 		2->9;
 		2->10;
-		9->12;
-		5->16;
-		2->17;
-		2->18;
-		18->21;
+		6->12;
+		2->13;
+		2->14;
 	}
 	subgraph undir {
 		edge [dir=none, color=red]
-		12->7;
-		14->8;
-		19->15;
-		21->16;
+		13->12;
 	}
 }

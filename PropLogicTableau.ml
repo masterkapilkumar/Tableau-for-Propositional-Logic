@@ -118,38 +118,39 @@ struct
 		(* ancestors - list of backward directed edges (blue dashed) from bottom to top *)
 		(* fml_map - map of numerical label of tree nodes to propositional formula label *)
 		(* closed - list of undirected edges between complementary pairs for closing the paths *)
+		(* isClosed (boolean) - whether current path closed or not *)
 		let rec tableau_helper prop lits n1 n2 extras extra_index =
 			match prop with
 				 AND(a,b) -> 	
 							(* check if any complementary pair exists in current path or not *)
 							let isClosed = findComplimentaryPair lits (AND(a,b)) in
-								if(isClosed <> -1) then (n2, [], [], [], [(n1, isClosed)])
+								if(isClosed <> -1) then (n2, [], [], [], [(n1, isClosed)], true)
 								else
 							(* check if any complementary pair exists in current path after expanding "a" of AND(a,b) *)
 							let isClosedA = findComplimentaryPair lits a in
 								if(isClosedA <> -1) then 
-									(n2, [(n1,n2)], [], [(n2,a)], [(n2, isClosedA)])
+									(n2, [(n1,n2)], [], [(n2,a)], [(n2, isClosedA)], true)
 								else
 							
 							let litIndex = if(extra_index == -1) then n1 else extra_index in
-							let (nA, dir, ancestors, fml_map, closed) =
+							let (nA, dir, ancestors, fml_map, closed, isClosed) =
 							        (* Expand "b" of AND(a,b) after adding current formula to lits and "a" to extras, which will be expanded later *)
 									tableau_helper b ((litIndex, AND(a,b))::lits) (n2+1) (n2+2) ((n2,a)::extras) (-1) 
 							in
 							let ances = if(extra_index == -1) then (n1,n2+1)::ancestors else ancestors in
-								(nA, (n1,n2)::(n2,n2+1)::dir, ances, (n2,a)::(n2+1,b)::fml_map, closed)
+								(nA, (n1,n2)::(n2,n2+1)::dir, ances, (n2,a)::(n2+1,b)::fml_map, closed, isClosed)
 				|OR(a,b) -> 
 							(* check if any complementary pair exists in current path or not *)
 							let isClosed = findComplimentaryPair lits (OR(a,b)) in
-								if(isClosed <> -1) then (n1, [], [], [], [(n1, isClosed)])
+								if(isClosed <> -1) then (n1, [], [], [], [(n1, isClosed)], true)
 								else
 							let litIndex = if(extra_index == -1) then n1 else extra_index in
 							
 							(* First expand "a" in one branch and then "b" in the other branch *)
-							let (nA, dirA, ancestors1, fml_map1, closed1) = tableau_helper a ((litIndex,OR(a,b))::lits) n2 (n2+2) extras (-1) in
-							let (nB, dirB, ancestors2, fml_map2, closed2) = tableau_helper b ((litIndex,OR(a,b))::lits) (n2+1) (nA+1) extras (-1) in
+							let (nA, dirA, ancestors1, fml_map1, closed1, isClosed1) = tableau_helper a ((litIndex,OR(a,b))::lits) n2 (n2+2) extras (-1) in
+							let (nB, dirB, ancestors2, fml_map2, closed2, isClosed2) = tableau_helper b ((litIndex,OR(a,b))::lits) (n2+1) (nA+1) extras (-1) in
 								(* Merge the return values from both the branches *)
-								(nB, (n1,n2)::(n1,n2+1)::(dirA@dirB), ancestors1@ancestors2, (n2,a)::(n2+1,b)::(fml_map1@fml_map2), closed1@closed2)
+								(nB, (n1,n2)::(n1,n2+1)::(dirA@dirB), ancestors1@ancestors2, (n2,a)::(n2+1,b)::(fml_map1@fml_map2), closed1@closed2, (isClosed1 && isClosed2))
 				
 				|COND(a,b) -> tableau_helper (OR(NOT a,b)) lits n1 n2 extras (-1)
 				|BIC(a,b) ->  tableau_helper (OR(AND(a,b), AND(NOT a, NOT b))) lits n1 n2 extras (-1)
@@ -161,56 +162,57 @@ struct
 				|NOT(NOT a) ->
 							(* check if any complementary pair exists in current path or not *)
 							let isClosed = findComplimentaryPair lits (NOT(NOT a)) in
-							if(isClosed <> -1) then (n1, [], [], [], [(n1, isClosed)])
+							if(isClosed <> -1) then (n1, [], [], [], [(n1, isClosed)], true)
 							else
 							(* NOT(NOT(a))=a *)
-							let (nA, dir, ancestors, fml_map, closed) = tableau_helper a ((n1,NOT(NOT a))::lits) n2 (n2+1) extras (-1) in
-								(nA, (n1,n2)::dir, ancestors, (n2, a)::fml_map, closed)
+							let (nA, dir, ancestors, fml_map, closed, isClosed) = tableau_helper a ((n1,NOT(NOT a))::lits) n2 (n2+1) extras (-1) in
+								(nA, (n1,n2)::dir, ancestors, (n2, a)::fml_map, closed, isClosed)
 				|NOT(ATOM s) -> (
 							(* check if any complementary pair exists in current path or not *)
 							let isClosed = findComplimentaryPair lits (NOT(ATOM s)) in
-							if(isClosed <> -1) then (n2, [], [], [], [(n1, isClosed)])
+							if(isClosed <> -1) then (n2, [], [], [], [(n1, isClosed)], true)
 							else
 							let litIndex = if(extra_index == -1) then n1 else extra_index in 
 							
 							(* Since current formula can't be expanded further, expand any pending formula in extras from this point *)
 							match extras with
 								(n,hd)::tl ->  (
-												let (nA, dir, ancestors, fml_map, closed) = tableau_helper hd ((litIndex, NOT(ATOM(s)))::lits) n1 n2 tl n in
+												let (nA, dir, ancestors, fml_map, closed, isClosed) = tableau_helper hd ((litIndex, NOT(ATOM(s)))::lits) n1 n2 tl n in
 												
 												(* Add necessary back edges from current "extra" to its original position *)
 												match hd with
-													 AND(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed)
-													|OR(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed)
-													| NOT(NOT(a)) -> (nA, dir, (n,n2)::ancestors, fml_map, closed)
-													| _ -> (nA, dir, ancestors, fml_map, closed)
+													 AND(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed, isClosed)
+													|OR(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed, isClosed)
+													| NOT(NOT(a)) -> (nA, dir, (n,n2)::ancestors, fml_map, closed, isClosed)
+													| _ -> (nA, dir, ancestors, fml_map, closed, isClosed)
 												)
-								|[] -> (n1, [], [], [], [])
+								|[] -> (n1, [], [], [], [], false)
 							)
 				|ATOM(s) -> (
 							(* check if any complementary pair exists in current path or not *)
 							let isClosed = findComplimentaryPair lits (ATOM s) in
-							if(isClosed <> -1) then (n2, [], [], [], [(n1, isClosed)])
+							if(isClosed <> -1) then (n2, [], [], [], [(n1, isClosed)], true)
 							else
 							let litIndex = if(extra_index == -1) then n1 else extra_index in 
 							
 							(* Since current formula can't be expanded further, expand any pending formula in extras from this point *)
 							match extras with
 								 (n,hd)::tl ->  (
-												let (nA, dir, ancestors, fml_map, closed) = tableau_helper hd ((litIndex, ATOM(s))::lits) n1 n2 tl n in
+												let (nA, dir, ancestors, fml_map, closed, isClosed) = tableau_helper hd ((litIndex, ATOM(s))::lits) n1 n2 tl n in
 												
 												(* Add necessary back edges from current "extra" to its original position *)
 												match hd with
-													 AND(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed)
-													|OR(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed)
-													| NOT(NOT(a)) -> (nA, dir, (n,n2)::ancestors, fml_map, closed)
-													| _ -> (nA, dir, ancestors, fml_map, closed)
+													 AND(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed, isClosed)
+													|OR(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed, isClosed)
+													| NOT(NOT(a)) -> (nA, dir, (n,n2)::ancestors, fml_map, closed, isClosed)
+													| _ -> (nA, dir, ancestors, fml_map, closed, isClosed)
 												)
-								|[] -> (n1, [], [], [], [])
+								|[] -> (n1, [], [], [], [], false)
 							)
 		in
 		let arg = AND(convert_arg_to_Prop (List.tl prop_list), (List.hd prop_list)) in
-		let (n, dir, ancestors, fml_map_temp, closed) = tableau_helper arg [] 1 2 [] (-1) in
+		let (n, dir, ancestors, fml_map_temp, closed, isClosed) = tableau_helper arg [] 1 2 [] (-1) in
+		let _ = if(isClosed=false) then printf "The given argument is invalid." else printf "The given argument is valid." in
 		let fml_map = (1,arg)::fml_map_temp in
 		(* Print all edges and node labels to dot file *)
 		let _ = print_labels_list_to_file fout fml_map in

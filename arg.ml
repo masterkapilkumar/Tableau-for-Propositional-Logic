@@ -18,10 +18,10 @@ let h6 = NOT (differ);;
 let c = COND (perceive, AND (sensation, NOT (material)));;
 let arg = ([h1; h2; h3; h4; h5; h6], c);;
 
-*)
 let h1 = OR(AND(perceive, delusive),AND(NOT(perceive),veridical));;
 let c = AND(OR(NOT(perceive),delusive),OR(perceive, veridical));;
 let arg = ([h1], c);;
+*)
 
 (*
 let h1 = OR (NOT(perceive), NOT (AND (OR(NOT(delusive), veridical), OR(NOT(veridical), delusive))));;
@@ -40,9 +40,8 @@ let c = AND(delusive,veridical);;
 let arg = ([h1; h2; h3], c);;
 
 
-
-let h1 = COND(perceive,delusive);;
-let h2 = COND(delusive,perceive);;
-let c = BIC(delusive,perceive);;
-let arg = ([h1; h2], c);;
 *)
+
+let h1 = AND(perceive,delusive);;
+let c = NOT(BIC(delusive,perceive));;
+let arg = ([h1], c);;
