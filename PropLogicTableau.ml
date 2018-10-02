@@ -204,6 +204,8 @@ struct
 												match hd with
 													 AND(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed, isClosed)
 													|OR(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed, isClosed)
+													|COND(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed, isClosed)
+													|BIC(a,b) -> (nA, dir, (n,n2)::(n,n2+1)::ancestors, fml_map, closed, isClosed)
 													| NOT(NOT(a)) -> (nA, dir, (n,n2)::ancestors, fml_map, closed, isClosed)
 													| _ -> (nA, dir, ancestors, fml_map, closed, isClosed)
 												)
