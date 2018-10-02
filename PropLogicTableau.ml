@@ -156,7 +156,7 @@ struct
 				|BIC(a,b) ->  tableau_helper (OR(AND(a,b), AND(NOT a, NOT b))) lits n1 n2 extras (-1)
 				|NOT(AND(a,b)) -> tableau_helper (OR(NOT a, NOT b)) lits n1 n2 extras (-1)
 				|NOT(OR(a,b)) -> tableau_helper (AND(NOT a, NOT b)) lits n1 n2 extras (-1)
-				|NOT(COND(a,b)) -> tableau_helper (OR(a, NOT b)) lits n1 n2 extras (-1)
+				|NOT(COND(a,b)) -> tableau_helper (AND(a, NOT b)) lits n1 n2 extras (-1)
 				|NOT(BIC(a,b)) ->  tableau_helper (OR(AND(a,NOT b), AND(NOT a, b))) lits n1 n2 extras (-1)
 				
 				|NOT(NOT a) ->
@@ -212,7 +212,7 @@ struct
 		in
 		let arg = AND(convert_arg_to_Prop (List.tl prop_list), (List.hd prop_list)) in
 		let (n, dir, ancestors, fml_map_temp, closed, isClosed) = tableau_helper arg [] 1 2 [] (-1) in
-		let _ = if(isClosed=false) then printf "The given argument is invalid." else printf "The given argument is valid." in
+		let _ = if(isClosed=false) then printf "\nThe given argument is invalid.\n" else printf "\nThe given argument is valid.\n" in
 		let fml_map = (1,arg)::fml_map_temp in
 		(* Print all edges and node labels to dot file *)
 		let _ = print_labels_list_to_file fout fml_map in
